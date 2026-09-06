@@ -5,20 +5,20 @@ import dotenv from 'dotenv';
 import { CONFIG } from './config/constants';
 
 // Импорты роутов
-// import authRoutes from './routes/auth';
-// import postRoutes from './routes/posts';
-// import userRoutes from './routes/users';
+import authRoutes from './api/auth';
 
 dotenv.config();
 
 const app: Express = express();
 
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true,
-}));
+app.use(cors());
 
 app.use(express.json());
+
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next(); // передаем управление дальше
+});
 
 app.use(cookieParser());
 
@@ -31,9 +31,7 @@ if (CONFIG.NODE_ENV === 'development') {
 }
 
 // ----------- Роуты -----------
-// app.use('/api/auth', authRoutes);
-// app.use('/api/posts', postRoutes);
-// app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 
 // ----------- Запуск сервера -----------
 app.listen(CONFIG.PORT, () => {
