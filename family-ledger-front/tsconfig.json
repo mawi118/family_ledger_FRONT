@@ -1,9 +1,15 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".react-router/types/**/*"
+  ],
   "compilerOptions": {
     // File Layout
     // "rootDir": "./src",
     // "outDir": "./dist",
+
+    "rootDirs": [".", "./.react-router/types"],
 
     "paths": {
       "@/*": ["./src/*"]
@@ -11,7 +17,8 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "target": "esnext",
     "types": [],
     // For nodejs:
