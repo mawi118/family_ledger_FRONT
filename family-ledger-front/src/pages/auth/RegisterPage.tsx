@@ -17,6 +17,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { href } from "@/lib/href";
+import { register } from "@/api/auth/auth-endpoints";
 
 type CharClass = "letter" | "digit" | "symbol" | "other";
 
@@ -97,13 +98,15 @@ export default function RegisterPage() {
 
   async function onSubmit(values: FormValues) {
     try {
-      // TODO: await api.register(values);
-      console.log("register", values);
-
-      navigate(href('verifyEmail'), { state: { email: values.email } });
-    } catch {
+      await register({
+        email: values.email,
+        password: values.password,
+        firstName: values.username,
+      });
+      navigate(href("verifyEmail"), { state: { email: values.email } });
+    } catch (e) {
       form.setError("root", {
-        message: "Не удалось зарегистрироваться. Попробуйте ещё раз.",
+        message: e instanceof Error ? e.message : "Не удалось зарегистрироваться",
       });
     }
   }

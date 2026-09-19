@@ -9,8 +9,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { href } from "@/lib/href";
+import { login } from "@/api/auth/auth-endpoints";
 
 const schema = z.object({
   email: z.string().email("Некорректный email"),
@@ -20,14 +21,27 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { email: "", password: "" },
     mode: 'onChange',
   });
 
-  function onSubmit(values: FormValues) {
-    console.log(values);
+  async function onSubmit(values: FormValues) {
+    try {
+      await login({
+        email: values.email,
+        password: values.password,
+      });
+
+      navigate(href("home"));
+    } catch (e) {
+      form.setError("root", {
+        message: e instanceof Error ? e.message : "Неверный email или пароль",
+      });
+    }
   }
 
   return (
