@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import { CONFIG } from './config/constants';
 
 // Импорты роутов
-import authRoutes from './api/auth';
+import authRoutes from './api/auth/auth';
 
 dotenv.config();
 
