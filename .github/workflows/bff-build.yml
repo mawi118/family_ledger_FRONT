@@ -2,7 +2,7 @@ name: BFF Build & Push
 
 on:
   push:
-    branches: [master]
+    branches: [master, fix/bff-proto-vendoring]
     paths:
       - 'family-ledger-bff/**'
   workflow_dispatch:
