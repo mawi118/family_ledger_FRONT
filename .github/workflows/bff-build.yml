@@ -5,7 +5,7 @@ on:
     branches: [master]
     paths:
       - 'family-ledger-bff/**'
-
+  workflow_dispatch:
 permissions:
   contents: read
   packages: write
