@@ -5,6 +5,7 @@ on:
     branches: [master, fix/bff-proto-vendoring]
     paths:
       - 'family-ledger-bff/**'
+      - '.github/workflows/bff-build.yml'
   workflow_dispatch:
 permissions:
   contents: read
