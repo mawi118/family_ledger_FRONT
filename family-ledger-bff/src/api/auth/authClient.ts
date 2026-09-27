@@ -5,7 +5,7 @@ import { CONFIG } from '../../config/constants';
 import type { ProtoGrpcType } from '../../generated/auth';
 import type { AuthClient } from '../../generated/FL/v1/Auth';
 
-const PROTO_PATH = path.resolve(__dirname, '../../../../backend/proto/auth.proto');
+const PROTO_PATH = path.resolve(__dirname, '../../../backend/proto/auth.proto');
 
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   keepCase: true,
