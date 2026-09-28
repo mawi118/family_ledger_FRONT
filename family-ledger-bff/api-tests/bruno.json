@@ -1,0 +1,6 @@
+{
+  "version": "1",
+  "name": "family-ledger-bff",
+  "type": "collection",
+  "ignore": ["node_modules", ".git"]
+}

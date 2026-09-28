@@ -1,0 +1,15 @@
+meta {
+  name: Refresh after logout (must fail)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/auth/refresh
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}
