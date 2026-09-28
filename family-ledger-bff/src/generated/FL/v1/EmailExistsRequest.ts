@@ -1,4 +1,4 @@
-// Original file: ../backend/proto/auth.proto
+// Original file: proto/auth.proto
 
 
 export interface EmailExistsRequest {

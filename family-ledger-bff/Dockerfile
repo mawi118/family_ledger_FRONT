@@ -11,5 +11,6 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
+COPY proto ./proto
 EXPOSE 4000
 CMD ["node", "dist/app.js"]
