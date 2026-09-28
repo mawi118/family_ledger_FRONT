@@ -1,0 +1,760 @@
+openapi: 3.0.0
+info:
+  title: BFF API
+  description: API для family-ledger
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000/api
+    description: Local development server
+
+paths:
+  /auth/register:
+    post:
+      summary: Регистрация нового пользователя
+      description: Создает нового пользователя и устанавливает HttpOnly-куку с JWT
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+      responses:
+        '201':
+          description: Пользователь успешно зарегистрирован
+          headers:
+            Set-Cookie:
+              description: HttpOnly-кука access_token с JWT
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Пользователь с такой почтой уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      summary: Авторизация пользователя
+      description: Вход в систему по почте и паролю. Устанавливает HttpOnly-куку с JWT
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthUserRequest'
+      responses:
+        '200':
+          description: Успешная авторизация
+          headers:
+            Set-Cookie:
+              description: HttpOnly-кука access_token с JWT
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Неверные учетные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/logout:
+    post:
+      summary: Выход из системы
+      description: Удаляет HttpOnly-куку с JWT
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: Успешный выход
+          headers:
+            Set-Cookie:
+              description: Очистка куки access_token
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutUserResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/me:
+    get:
+      summary: Текущий пользователь
+      description: Возвращает данные авторизованного пользователя по HttpOnly-куке
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: Пользователь авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Не авторизован (кука отсутствует или невалидна)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /groups:
+    post:
+      summary: Создать группу
+      description: Создаёт новую группу. Текущий пользователь становится её создателем.
+      tags:
+        - Groups
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGroupRequest'
+      responses:
+        '201':
+          description: Группа успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # 2. Получение группы
+  # ============================================
+  /groups/{groupId}:
+    get:
+      summary: Получить группу по id
+      description: Возвращает информацию о группе.
+      tags:
+        - Groups
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GroupIdPath'
+      responses:
+        '200':
+          description: Группа найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Группа не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      summary: Изменить название группы
+      description: Редактирует название группы. Доступно только создателю группы.
+      tags:
+        - Groups
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GroupIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGroupNameRequest'
+      responses:
+        '200':
+          description: Название обновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateGroupNameResponse'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Нет прав на редактирование (не создатель группы)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Группа не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # 3-4. Доход текущего пользователя в группе
+  # ============================================
+  /groups/{groupId}/income:
+    get:
+      summary: Получить доход текущего пользователя в группе
+      description: Возвращает доход, который текущий пользователь указал для данной группы.
+      tags:
+        - Income
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GroupIdPath'
+      responses:
+        '200':
+          description: Доход получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncomeResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Группа не найдена, или пользователь не состоит в группе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Изменить доход текущего пользователя в группе
+      description: Устанавливает новый размер дохода для текущего пользователя.
+      tags:
+        - Income
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GroupIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateIncomeRequest'
+      responses:
+        '200':
+          description: Доход обновлён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncomeResponse'
+        '400':
+          description: Ошибка валидации (например, отрицательный доход)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Группа не найдена, или пользователь не состоит в группе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # 6. Список пользователей группы
+  # ============================================
+  /groups/{groupId}/members:
+    get:
+      summary: Получить список участников группы
+      description: Возвращает массив пользователей, состоящих в группе, с их доходами.
+      tags:
+        - Groups
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GroupIdPath'
+      responses:
+        '200':
+          description: Список участников
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GroupMemberResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Группа не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # 7. Приглашение пользователя в группу
+  # ============================================
+  /groups/{groupId}/invite:
+    post:
+      summary: Получить код приглашения в группу
+      description: |
+        Возвращает 4-значный код приглашения.
+        
+        Если активный код уже существует — возвращает его же (без создания нового).
+        Если активного кода нет — генерирует новый.
+        
+        Код живёт не более 5 минут с момента создания, после чего автоматически
+        становится невалидным. До истечения срока новый код сгенерировать нельзя.
+      tags:
+        - Invitations
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GroupIdPath'
+      responses:
+        '200':
+          description: Код приглашения (новый или существующий активный)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteCodeResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Нет прав на приглашение (не участник группы)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Группа не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # 8. Ввод кода приглашения
+  # ============================================
+  /invitations/accept:
+    post:
+      summary: Принять приглашение по коду
+      description: Добавляет текущего пользователя в группу по 4-значному коду.
+      tags:
+        - Invitations
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptInvitationRequest'
+      responses:
+        '200':
+          description: Пользователь успешно добавлен в группу
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptInvitationResponse'
+        '400':
+          description: Ошибка валидации (например, неверный формат кода)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Код не найден или просрочен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Пользователь уже состоит в группе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Сообщение об ошибке
+          example: "Неверный email или пароль"
+        statusCode:
+          type: integer
+          description: HTTP статус код
+          example: 401
+
+    UserResponse:
+      type: object
+      required: [id, email, firstName]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        firstName:
+          type: string
+          example: "Дио"
+
+    AuthUserRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          example: "securePass123"
+
+    RegisterUserRequest:
+      type: object
+      required: [email, password, firstName]
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: "securePass123"
+        firstName:
+          type: string
+          minLength: 2
+          example: "Дио"
+
+    LogoutUserResponse:
+      type: object
+      required: [success, message]
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Успешный выход из системы"
+    
+    GroupResponse:
+      type: object
+      required: [id, name, creatorId]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID группы
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        name:
+          type: string
+          description: Название группы
+          example: "Семейный бюджет"
+        creatorId:
+          type: string
+          format: uuid
+          description: ID пользователя-создателя группы
+          example: "987e6543-e21b-12d3-a456-426614174000"
+
+    CreateGroupRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          description: Название группы
+          minLength: 1
+          maxLength: 100
+          example: "Семейный бюджет"
+
+    UpdateGroupNameRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          description: Новое название группы
+          minLength: 1
+          maxLength: 100
+          example: "Наша семья"
+
+    UpdateGroupNameResponse:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          description: Новое название группы
+          example: "Наша семья"
+
+    # ---------- Участник группы ----------
+    # ✏️ lastName и middleName — необязательные
+    GroupMemberResponse:
+      type: object
+      required: [id, firstName, joinedAt, income]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID пользователя
+          example: "987e6543-e21b-12d3-a456-426614174000"
+        firstName:
+          type: string
+          description: Имя
+          example: "Иван"
+        lastName:
+          type: string
+          nullable: true
+          description: Фамилия (может отсутствовать)
+          example: "Иванов"
+        middleName:
+          type: string
+          nullable: true
+          description: Отчество (может отсутствовать)
+          example: "Иванович"
+        joinedAt:
+          type: string
+          format: date-time
+          description: Дата добавления пользователя в группу
+          example: "2026-09-27T14:30:00Z"
+        income:
+          type: integer
+          format: int64
+          description: Доход пользователя для данной группы, в копейках
+          minimum: 0
+          example: 5000000
+
+    # ---------- Доход ----------
+    # ✏️ integer + примеры в копейках
+    IncomeResponse:
+      type: object
+      required: [income]
+      properties:
+        income:
+          type: integer
+          format: int64
+          description: Размер дохода пользователя в группе, в копейках
+          minimum: 0
+          example: 5000000
+
+    UpdateIncomeRequest:
+      type: object
+      required: [income]
+      properties:
+        income:
+          type: integer
+          format: int64
+          description: Новое значение дохода, в копейках
+          minimum: 0
+          example: 6000000
+
+    # ---------- Приглашения ----------
+    # ✏️ Добавлено поле expiresAt
+    InviteCodeResponse:
+      type: object
+      required: [code, expiresAt]
+      properties:
+        code:
+          type: string
+          description: 4-значный код приглашения
+          pattern: '^\d{4}$'
+          example: "1234"
+        expiresAt:
+          type: string
+          format: date-time
+          description: |
+            Момент времени, когда код станет невалидным (ISO 8601, UTC).
+            Фронт может показывать таймер обратного отсчёта.
+          example: "2026-09-27T14:35:00Z"
+
+    AcceptInvitationRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          description: 4-значный код приглашения
+          pattern: '^\d{4}$'
+          example: "1234"
+
+    AcceptInvitationResponse:
+      type: object
+      required: [groupId]
+      properties:
+        groupId:
+          type: string
+          format: uuid
+          description: ID группы, в которую добавлен пользователь
+          example: "123e4567-e89b-12d3-a456-426614174000"
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+      description: JWT в HttpOnly-куке
+
+  parameters:
+    GroupIdPath:
+      name: groupId
+      in: path
+      required: true
+      description: UUID группы
+      schema:
+        type: string
+        format: uuid
+        example: "123e4567-e89b-12d3-a456-426614174000"

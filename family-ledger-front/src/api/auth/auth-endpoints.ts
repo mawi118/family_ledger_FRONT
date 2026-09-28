@@ -1,5 +1,5 @@
 import { http } from "@/api/http";
-import type { components } from "@/api/auth/auth-types";
+import type { components } from "@/api/generated-types";
 
 export type User = components["schemas"]["UserResponse"];
 export type AuthResponse = components["schemas"]["UserResponse"];
