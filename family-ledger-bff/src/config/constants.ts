@@ -10,7 +10,7 @@ export const CONFIG = {
   ACCESS_TOKEN_COOKIE_NAME: 'access_token',
   ACCESS_TOKEN_MAX_AGE: 15 * 60 * 1000,
   REFRESH_TOKEN_COOKIE_NAME: 'refresh_token',
-  REFRESH_TOKEN_MAX_AGE: 30 * 24 * 60 * 60 * 1000,
+  REFRESH_TOKEN_MAX_AGE: 7 * 24 * 60 * 60 * 1000,
 } as const;
 
 export type Config = typeof CONFIG;

@@ -1,0 +1,33 @@
+meta {
+  name: Register with taken email (must fail)
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{testEmail}}",
+    "password": "Testpass123!",
+    "firstName": "Тест"
+  }
+}
+
+assert {
+  res.status: eq 409
+}
+
+tests {
+  test("текст ошибки из требований", function () {
+    expect(res.body.error).to.equal("Почта уже занята");
+  });
+}
