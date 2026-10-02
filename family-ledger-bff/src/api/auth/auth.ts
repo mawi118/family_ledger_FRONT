@@ -160,8 +160,12 @@ router.post('/refresh', async (req: Request, res: Response): Promise<void> => {
     setAuthCookies(res, response.access_token, response.refresh_token);
     res.json({ success: true });
   } catch (err) {
-    clearAuthCookies(res);
     const { statusCode, error } = grpcErrorToHttp(err);
+    // Куки сбрасываем только если бэкенд отклонил токен (401). При сбое бэкенда (503/500)
+    // сессия может быть цела, и клиент должен иметь возможность повторить запрос.
+    if (statusCode === 401) {
+      clearAuthCookies(res);
+    }
     res.status(statusCode).json({ success: false, error, statusCode });
   }
 });
@@ -175,7 +179,12 @@ router.post('/logout', async (req: Request, res: Response): Promise<void> => {
         refresh_token: refreshToken,
       });
     } catch (err) {
+      // Не говорим «выход выполнен», если токены не отозваны, и не стираем куки:
+      // иначе клиент не сможет повторить попытку, а сессия на бэкенде останется живой.
       console.error('[logout] backend revoke failed', err);
+      const { statusCode, error } = grpcErrorToHttp(err);
+      res.status(statusCode).json({ success: false, error, statusCode });
+      return;
     }
   }
 

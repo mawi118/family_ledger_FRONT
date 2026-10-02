@@ -42,5 +42,4 @@ app.use('/api/auth', authRoutes);
 app.listen(CONFIG.PORT, () => {
   console.log(`🚀 BFF сервер запущен на http://localhost:${CONFIG.PORT}`);
   console.log(`🔧 Режим: ${CONFIG.NODE_ENV}`);
-  console.log(`📦 Используются моки: ${CONFIG.NODE_ENV === 'development'}`);
 });
