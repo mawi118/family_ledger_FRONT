@@ -1,0 +1,25 @@
+meta {
+  name: Accept own invite (already a member, must fail)
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/invitations/accept
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "{{inviteCode}}"
+  }
+}
+
+assert {
+  res.status: eq 409
+}

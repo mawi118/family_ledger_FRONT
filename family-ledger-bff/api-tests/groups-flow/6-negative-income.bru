@@ -1,0 +1,31 @@
+meta {
+  name: Negative income (must fail)
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/groups/{{groupId}}/income
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "income": -1
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("текст ошибки", function () {
+    expect(res.body.error).to.equal("Доход не может быть отрицательным");
+  });
+}

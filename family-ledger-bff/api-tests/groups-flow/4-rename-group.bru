@@ -1,0 +1,26 @@
+meta {
+  name: Rename group (owner)
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/groups/{{groupId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Наша семья"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.name: eq Наша семья
+}
