@@ -1,0 +1,26 @@
+meta {
+  name: Set my income (kopecks)
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/groups/{{groupId}}/income
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "income": 5000000
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.income: eq 5000000
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Unknown group (must be 404)
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/groups/00000000-0000-0000-0000-000000000000
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}

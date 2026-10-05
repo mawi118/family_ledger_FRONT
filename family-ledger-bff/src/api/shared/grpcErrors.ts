@@ -27,7 +27,18 @@ export function grpcErrorToHttp(err: unknown): HttpError {
       return { statusCode: 400, error: backendMessage(err) ?? 'Некорректные данные' };
 
     case grpc.status.NOT_FOUND:
-      return { statusCode: 404, error: 'Не найдено' };
+      return { statusCode: 404, error: backendMessage(err) ?? 'Не найдено' };
+
+    case grpc.status.PERMISSION_DENIED:
+      return { statusCode: 403, error: backendMessage(err) ?? 'Недостаточно прав' };
+
+    // группа заполнена (10 участников) и подобные конфликты состояния
+    case grpc.status.FAILED_PRECONDITION:
+      return { statusCode: 409, error: backendMessage(err) ?? 'Действие сейчас невозможно' };
+
+    // лимит неверных кодов приглашения
+    case grpc.status.RESOURCE_EXHAUSTED:
+      return { statusCode: 429, error: backendMessage(err) ?? 'Слишком много попыток. Попробуйте позже' };
 
     case grpc.status.UNAVAILABLE:
     case grpc.status.DEADLINE_EXCEEDED:

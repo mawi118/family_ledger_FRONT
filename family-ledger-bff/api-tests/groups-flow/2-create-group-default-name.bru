@@ -1,0 +1,33 @@
+meta {
+  name: Create group without name (default name)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/groups
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {}
+}
+
+script:post-response {
+  bru.setVar("groupId", res.body.id);
+}
+
+assert {
+  res.status: eq 201
+}
+
+tests {
+  test("имя по умолчанию «Группа 1»", function () {
+    expect(res.body.name).to.equal("Группа 1");
+  });
+}
